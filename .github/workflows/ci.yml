@@ -1,0 +1,240 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        shell: bash
+        run: |
+          start=$(date +%s)
+          set +e
+          npm run lint
+          status=$?
+          end=$(date +%s)
+          duration=$(( end - start ))
+          echo "duration=${duration}" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Run unit tests
+        id: unit
+        continue-on-error: true
+        shell: bash
+        run: |
+          rm -rf coverage
+          start=$(date +%s)
+          set +e
+          npm run test
+          status=$?
+          end=$(date +%s)
+          duration=$(( end - start ))
+          echo "duration=${duration}" >> "$GITHUB_OUTPUT"
+          if [ -d coverage ]; then
+            echo "has_coverage=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_coverage=false" >> "$GITHUB_OUTPUT"
+          fi
+          exit $status
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke tests
+        id: e2e
+        continue-on-error: true
+        shell: bash
+        run: |
+          rm -rf playwright-report test-results
+          start=$(date +%s)
+          set +e
+          npx playwright test --project=chromium --reporter=line --reporter=html --output=test-results
+          status=$?
+          end=$(date +%s)
+          duration=$(( end - start ))
+          echo "duration=${duration}" >> "$GITHUB_OUTPUT"
+          if [ -d playwright-report ]; then
+            echo "has_report=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_report=false" >> "$GITHUB_OUTPUT"
+          fi
+          exit $status
+
+      - name: Upload coverage report
+        if: always() && steps.unit.outputs.has_coverage == 'true'
+        id: coverage_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.run_id }}
+          path: coverage
+          if-no-files-found: warn
+
+      - name: Upload Playwright report
+        if: always() && steps.e2e.outputs.has_report == 'true'
+        id: playwright_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report
+          if-no-files-found: warn
+
+      - name: Summarize results
+        if: always()
+        id: summarize
+        shell: bash
+        run: |
+          status_icon() {
+            case "$1" in
+              success) echo "✅ Passed" ;;
+              failure) echo "❌ Failed" ;;
+              cancelled) echo "⚠️ Cancelled" ;;
+              skipped) echo "⚠️ Skipped" ;;
+              *) echo "❓ $1" ;;
+            esac
+          }
+
+          format_duration() {
+            if [ -z "$1" ] || [ "$1" = "null" ]; then
+              echo "—"
+              return
+            fi
+            total=$1
+            if [ "$total" -lt 0 ]; then
+              echo "—"
+              return
+            fi
+            mins=$(( total / 60 ))
+            secs=$(( total % 60 ))
+            printf "%02d:%02d" "$mins" "$secs"
+          }
+
+          LINT_STATUS=$(status_icon "${LINT_OUTCOME:-skipped}")
+          UNIT_STATUS=$(status_icon "${UNIT_OUTCOME:-skipped}")
+          E2E_STATUS=$(status_icon "${E2E_OUTCOME:-skipped}")
+
+          LINT_DURATION_FMT=$(format_duration "${LINT_DURATION:-0}")
+          UNIT_DURATION_FMT=$(format_duration "${UNIT_DURATION:-0}")
+          E2E_DURATION_FMT=$(format_duration "${E2E_DURATION:-0}")
+
+          COVERAGE_REPORT="—"
+          if [ -d coverage ] && [ -f coverage/coverage-summary.json ]; then
+            COVERAGE_STATS=$(node <<'NODE'
+const fs = require('fs');
+const path = 'coverage/coverage-summary.json';
+try {
+  if (!fs.existsSync(path)) {
+    process.exit(0);
+  }
+  const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
+  const total = summary.total || {};
+  const fmt = (key, label) => {
+    const pct = total[key] && typeof total[key].pct === 'number' ? total[key].pct : null;
+    return pct === null ? `${label} n/a` : `${label} ${pct.toFixed(1)}%`;
+  };
+  process.stdout.write([
+    fmt('lines', 'Lines'),
+    fmt('functions', 'Funcs'),
+    fmt('branches', 'Branches'),
+    fmt('statements', 'Statements')
+  ].join(' · '));
+} catch (error) {
+  process.stderr.write(`Failed to parse coverage summary: ${error.message}`);
+}
+NODE
+)
+            COVERAGE_STATS=$(echo "$COVERAGE_STATS" | tr -d '\r\n')
+            if [ -n "$COVERAGE_STATS" ]; then
+              if [ -n "${COVERAGE_URL}" ]; then
+                COVERAGE_REPORT="${COVERAGE_STATS} ([Report](${COVERAGE_URL}))"
+              else
+                COVERAGE_REPORT="${COVERAGE_STATS}"
+              fi
+            fi
+          elif [ -n "${COVERAGE_URL}" ]; then
+            COVERAGE_REPORT="[Coverage Report](${COVERAGE_URL})"
+          fi
+
+          if [ -n "${PLAYWRIGHT_URL}" ]; then
+            E2E_REPORT="[Playwright HTML](${PLAYWRIGHT_URL})"
+          else
+            E2E_REPORT="—"
+          fi
+
+          RUN_LINK="[Workflow Logs](${GITHUB_RUN_URL})"
+
+          SUMMARY=$(cat <<EOF
+### CI Results
+
+| Check | Status | Duration (mm:ss) | Report |
+| --- | --- | --- | --- |
+| Lint | ${LINT_STATUS} | ${LINT_DURATION_FMT} | — |
+| Unit Tests | ${UNIT_STATUS} | ${UNIT_DURATION_FMT} | ${COVERAGE_REPORT} |
+| Playwright (chromium) | ${E2E_STATUS} | ${E2E_DURATION_FMT} | ${E2E_REPORT} |
+
+${RUN_LINK}
+
+_Generated by GitHub Actions CI_
+EOF
+          )
+
+          printf '%s\n' "$SUMMARY" >> "$GITHUB_STEP_SUMMARY"
+
+          {
+            echo "body<<'EOF'"
+            printf '%s\n' "$SUMMARY"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+        env:
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          UNIT_OUTCOME: ${{ steps.unit.outcome }}
+          E2E_OUTCOME: ${{ steps.e2e.outcome }}
+          LINT_DURATION: ${{ steps.lint.outputs.duration }}
+          UNIT_DURATION: ${{ steps.unit.outputs.duration }}
+          E2E_DURATION: ${{ steps.e2e.outputs.duration }}
+          COVERAGE_URL: ${{ steps.coverage_artifact.outputs.artifact-url }}
+          PLAYWRIGHT_URL: ${{ steps.playwright_artifact.outputs.artifact-url }}
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Comment summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const marker = '<!-- ci-summary -->';
+            const summary = JSON.parse(${{ toJSON(steps.summarize.outputs.body) }});
+            const body = `${marker}\n${summary}`;
+            const { repo, owner } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+            const previous = comments.find(comment => comment.body && comment.body.includes(marker));
+            if (previous) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      - name: Fail workflow if any checks failed
+        if: ${{ always() && (steps.lint.outcome != 'success' || steps.unit.outcome != 'success' || steps.e2e.outcome != 'success') }}
+        run: |
+          echo "One or more checks failed."
+          exit 1

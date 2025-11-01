@@ -1,0 +1,32 @@
+docs:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file:
+              - "**/*.md"
+          - all-globs-to-all-files:
+              - "README.md"
+              - "AGENTS.md"
+              - "docs/**"
+              - "src/**"
+              - "e2e/**"
+              - "testing/**"
+              - ".github/**"
+              - ".specify/**"
+              - ".gitignore"
+
+internal:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file:
+              - ".github/**"
+              - ".specify/**"
+              - "testing/**"
+              - "e2e/**"
+              - ".gitignore"
+          - all-globs-to-all-files:
+              - "**/*.md"
+              - "src/**"
+              - ".github/**"
+              - ".specify/**"
+              - "e2e/**"
+              - "testing/**"

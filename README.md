@@ -1,213 +1,257 @@
-# Obsidian AI MCP Plugin v0.3.0
+# bl1nk Note Frontend
 
-## 🧠 ภาพรวม
+AI-Powered Workspace Frontend built with Next.js, TypeScript, and Tailwind CSS.
 
-ปลั๊กอิน AI MCP (Model Context Protocol) สำหรับ Obsidian ที่มีความสามารถขั้นสูงในการจัดการความรู้ด้วย AI พร้อมฟีเจอร์ครบครัน:
+## Features
 
-- **Memory Graph**: ระบบกราฟความทรงจำที่เชื่อมโยงข้อมูลอย่างชาญฉลาด
-- **RAG (Retrieval-Augmented Generation)**: ค้นหาและดึงข้อมูลจาก vault ด้วย Mistral embeddings
-- **Chat Interface**: หน้าต่างแชทแบบ responsive พร้อมโหมด 3 แบบ
-- **Role-based AI**: ระบบ AI ที่ปรับเปลี่ยนบทบาทได้ตามความต้องการ
-- **Performance Optimization**: การปรับปรุงประสิทธิภาพแบบอัตโนมัติ
-- **Smart Features**: ฟีเจอร์ขั้นสูงอย่าง auto-tagging และ smart suggestions
+- **Modern UI/UX**: Built with Next.js 15, TypeScript, and Tailwind CSS
+- **AI-Powered Workspace**: Interactive command center for AI-driven automation
+- **Real-time System Monitoring**: Live system stats and health monitoring
+- **Plan Management**: Create, approve, and execute AI-generated plans
+- **Responsive Design**: Works seamlessly across desktop and mobile devices
+- **Type-Safe**: Full TypeScript support with comprehensive type definitions
 
-## 🚀 การติดตั้ง
+## Architecture
 
-### ขั้นตอนที่ 1: คัดลอกไฟล์
+### Frontend Stack
+- **Next.js 15**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **Zustand**: Lightweight state management
+- **Axios**: HTTP client for API communication
+- **Lucide React**: Beautiful icon library
+
+### Key Components
+
+#### Workspace Layout
+- **WorkspaceHeader**: Navigation and user management
+- **WorkspaceSidebar**: Project explorer and plan management
+- **WorkspaceCanvas**: Main content area with plan visualization
+- **WorkspaceInspector**: System monitoring and tools
+- **ChatPane**: AI command center
+
+#### Agent Cards
+- **PlanningCard**: Interactive plan approval interface
+- **ExecutionCard**: Real-time execution monitoring with progress tracking
+
+#### Authentication
+- **Login/Register**: Secure authentication flow
+- **Protected Routes**: Route guards for authenticated users
+
+## API Integration
+
+The frontend connects to the bl1nk backend through a comprehensive API service layer:
+
+### Core Services
+- **API Service**: Centralized HTTP client with interceptors
+- **Event Bus**: Type-safe event system for component communication
+- **Auth Store**: Authentication state management
+- **Workspace Store**: Workspace and plan management
+
+### API Endpoints
+- `/health` - System health check
+- `/admin/dashboard/*` - System monitoring and stats
+- `/auth/*` - Authentication endpoints
+- `/workspaces/*` - Workspace management
+- `/plans/*` - Plan CRUD operations
+- `/chat/command` - AI command processing
+- `/mcp/*` - Model Context Protocol integration
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- bl1nk backend running on port 8000
+
+### Installation
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment:**
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+   Update `.env.local`:
+   ```
+   NEXT_PUBLIC_API_URL=http://localhost:8000
+   NEXT_PUBLIC_APP_NAME=bl1nk Note
+   NEXT_PUBLIC_APP_VERSION=1.0.0
+   NEXT_PUBLIC_OAUTH_GITHUB_PATH=/auth/oauth/github
+   NEXT_PUBLIC_OAUTH_GOOGLE_PATH=/auth/oauth/google
+   NEXT_PUBLIC_OAUTH_CALLBACK_PATH=/auth/oauth-callback
+   ```
+
+   Adjust each OAuth path to match your backend endpoints and configure the provider to redirect back to `NEXT_PUBLIC_OAUTH_CALLBACK_PATH` with the token payload.
+
+3. **Start development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open browser:**
+   Navigate to `http://localhost:3000`
+
+### Production Build
+
 ```bash
-# คัดลอกโฟลเดอร์ทั้งหมดไปยัง
-.obsidian/plugins/obsidian-ai-mcp-plugin/
+npm run build
+npm start
 ```
 
-### ขั้นตอนที่ 2: ติดตั้ง Dependencies
+## Usage
+
+### Authentication
+1. Navigate to `/auth/login`
+2. Use demo credentials: `admin@bl1nk.com` / `password`
+3. Or register a new account
+4. Pick **Continue with GitHub/Google** to start the OAuth flow (requires backend support and the environment variables above).
+
+### Workspace Features
+
+#### Command Center
+- Type natural language commands in the chat pane
+- Examples:
+  - "Create a landing page for my startup"
+  - "Analyze user data and create insights"
+  - "Design a mobile app wireframe"
+
+#### Plan Management
+1. **Create Plans**: Use the command center to generate AI plans
+2. **Review Plans**: Examine steps and approve execution
+3. **Monitor Execution**: Watch real-time progress in execution cards
+4. **View Results**: Access completed plans and outputs
+
+#### System Monitoring
+- Real-time CPU, memory, and disk usage
+- Application metrics and error rates
+- Playwright testing integration
+- Health status indicators
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── auth/              # Authentication pages
+│   ├── workspace/         # Main workspace page
+│   ├── globals.css        # Global styles
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── agent_cards/       # AI agent interaction cards
+│   ├── auth/              # Authentication components
+│   ├── layout/            # Layout components
+│   ├── ui/                # Reusable UI components
+│   └── workspace/         # Workspace-specific components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility functions
+├── services/              # API and external services
+├── stores/                # Zustand state stores
+└── types/                 # TypeScript type definitions
+```
+
+## State Management
+
+### Auth Store
+- User authentication state
+- Login/logout functionality
+- Token management
+- Route protection
+
+### Workspace Store
+- Current workspace context
+- Plan management (CRUD operations)
+- Command processing
+- Real-time updates
+
+### Event Bus
+- Type-safe event communication
+- Component decoupling
+- Real-time notifications
+- System-wide state synchronization
+
+## Styling
+
+### Design System
+- **Colors**: HSL-based color system with CSS variables
+- **Typography**: Inter font family
+- **Spacing**: Consistent spacing scale
+- **Components**: Reusable UI components with variants
+
+### Responsive Design
+- Mobile-first approach
+- Breakpoint-based layouts
+- Touch-friendly interactions
+- Adaptive navigation
+
+## Development
+
+### Code Quality
+- ESLint configuration
+- TypeScript strict mode
+- Consistent code formatting
+- Component-based architecture
+
+### Performance
+- Next.js optimizations
+- Code splitting
+- Image optimization
+- Bundle analysis
+
+## Integration with Backend
+
+The frontend is designed to work seamlessly with the bl1nk unified backend:
+
+### API Communication
+- RESTful API integration
+- Real-time updates via polling
+- Error handling and retry logic
+- Request/response interceptors
+
+### Authentication Flow
+- JWT token-based authentication
+- Automatic token refresh
+- Secure route protection
+- Session management
+
+### Data Flow
+1. User inputs command in chat pane
+2. Frontend sends request to `/chat/command`
+3. Backend processes with AI and returns plan
+4. Frontend displays plan in workspace
+5. User approves plan
+6. Frontend triggers execution via `/plans/{id}/execute`
+7. Real-time progress updates in execution cards
+
+## Deployment
+
+### Build Configuration
 ```bash
-cd .obsidian/plugins/obsidian-ai-mcp-plugin/
-npm install
+npm run build
 ```
 
-### ขั้นตอนที่ 3: เปิดใช้งานใน Obsidian
-1. เปิด Settings > Community Plugins
-2. เปิดใช้งาน "AI MCP Plugin"
-3. หรือใช้ Plugin Development Tool สำหรับ hot-reload
+### Environment Variables
+- `NEXT_PUBLIC_API_URL`: Backend API URL
+- `NEXT_PUBLIC_APP_NAME`: Application name
+- `NEXT_PUBLIC_APP_VERSION`: Version number
 
-### ขั้นตอนที่ 4: ตั้งค่า API Keys
-1. เปิด Settings > AI MCP Plugin
-2. ใส่ **Mistral API Key** (ฟรี tier มีให้)
-3. ตั้งค่า **Qdrant URL** (local: `http://localhost:6333`)
-4. ตั้งค่าเพิ่มเติมตามต้องการ
-
-### ขั้นตอนที่ 5: เริ่มต้นใช้งาน
-1. รันคำสั่ง "Initialize Vault Memory (Full Scan)"
-2. ทดสอบด้วย "Test Vault Recall"
-3. เปิด AI Chat ด้วยไอคอน 🧠 ใน ribbon
-
-## 🎯 ฟีเจอร์หลัก
-
-### 💬 Chat Interface
-- **3 โหมดการทำงาน**: Ask, Planning, Agent
-- **Responsive Design**: ใช้งานได้ทั้งเดสก์ท็อปและมือถือ
-- **Context-Aware**: ดึงบริบทจากโน้ตที่เปิดอยู่
-- **Smart Suggestions**: แนะนำคำถามที่เหมาะสม
-
-### 🧠 Memory Graph
-- **Node Types**: fact, event, task, context, markdown
-- **Edge Types**: causal, temporal, similar, references
-- **Auto-Indexing**: จัดทำดัชนีอัตโนมัติเมื่อไฟล์เปลี่ยนแปลง
-- **Graph Visualization**: แสดงผลกราฟใน Obsidian
-
-### 🔍 RAG System
-- **Mistral Embeddings**: ใช้ mistral-embed (ฟรี)
-- **Qdrant Integration**: รองรับทั้ง local และ cloud
-- **Semantic Search**: ค้นหาตามความหมาย
-- **Hybrid Search**: รวม semantic และ keyword search
-
-### 🎭 Role System
-- **Dynamic Roles**: สร้างและจัดการ role ได้เอง
-- **Role Templates**: นำเข้า/ส่งออก role template
-- **Custom Prompts**: ปรับแต่ง system prompt ได้
-- **Role Folder**: จัดเก็บใน `AI Roles/` folder
-
-### ⚡ Performance Features
-- **Caching System**: แคชผลลัพธ์เพื่อความเร็ว
-- **Batch Processing**: ประมวลผลแบบกลุ่ม
-- **Lazy Loading**: โหลดไฟล์เมื่อจำเป็น
-- **Memory Optimization**: จัดการหน่วยความจำอัตโนมัติ
-
-### 🤖 Smart Features
-- **Auto-Tagging**: แท็กอัตโนมัติตามเนื้อหา
-- **Smart Suggestions**: แนะนำงานและการเชื่อมโยง
-- **Pattern Detection**: ตรวจจับรูปแบบในข้อมูล
-- **Knowledge Gap Analysis**: วิเคราะห์ช่องว่างความรู้
-
-## 📋 คำสั่งที่มีให้ใช้
-
-| คำสั่ง | คำอธิบาย |
-|--------|----------|
-| `Open AI Chat Interface` | เปิดหน้าต่างแชท AI |
-| `Initialize Vault Memory` | สแกนและจัดทำดัชนี vault ทั้งหมด |
-| `Test Vault Recall` | ทดสอบความแม่นยำของระบบ |
-| `Show Smart Suggestions` | แสดงคำแนะนำอัจฉริยะ |
-| `Auto-tag Current Note` | แท็กโน้ตปัจจุบันอัตโนมัติ |
-| `Smart Search` | ค้นหาแบบอัจฉริยะ |
-| `Export Memory Graph` | ส่งออกกราฟความทรงจำ |
-| `Import Memory Graph` | นำเข้ากราฟความทรงจำ |
-| `Visualize Memory Graph` | แสดงผลกราฟใน Obsidian |
-| `Optimize Memory Usage` | ปรับปรุงการใช้หน่วยความจำ |
-
-## ⚙️ การตั้งค่า
-
-### Mistral API
-1. สมัครที่ [Mistral AI](https://mistral.ai/)
-2. รับ API key (ฟรี tier มี 1M tokens/เดือน)
-3. ใส่ใน Settings > AI MCP Plugin
-
-### Qdrant Setup
-#### Local (แนะนำ)
+### Static Export (Optional)
 ```bash
-# ใช้ Docker
-docker run -p 6333:6333 qdrant/qdrant
-
-# หรือติดตั้งแบบ standalone
-# ดาวน์โหลดจาก https://qdrant.tech/
+npm run build && npm run export
 ```
 
-#### Cloud
-1. สมัครที่ [Qdrant Cloud](https://cloud.qdrant.io/)
-2. สร้าง cluster
-3. ใส่ URL และ API key ใน settings
+## Contributing
 
-### Custom Cloud Sync (ตัวเลือก)
-- ตั้งค่า endpoint สำหรับ sync ข้อมูลไปยัง cloud ส่วนตัว
-- รองรับ REST API พร้อม Bearer token authentication
+1. Follow TypeScript best practices
+2. Use consistent component patterns
+3. Implement proper error handling
+4. Add type definitions for new features
+5. Test API integrations thoroughly
 
-## 🎨 การปรับแต่ง UI
+## License
 
-### Mobile Optimization
-- ปุ่ม toggle สำหรับ context panel
-- Layout ปรับตัวตามขนาดหน้าจอ
-- Touch-friendly controls
-
-### Theme Support
-- รองรับ light/dark theme
-- ปรับตัวตาม Obsidian theme
-- High contrast mode support
-
-## 📊 Performance Metrics
-
-### Cache Statistics
-- Hit rate tracking
-- Memory usage monitoring
-- Performance optimization suggestions
-
-### Batch Processing
-- Configurable batch size
-- Priority-based processing
-- Concurrent request limiting
-
-## 🔧 การแก้ไขปัญหา
-
-### ปัญหาที่พบบ่อย
-
-**1. Embeddings ไม่ทำงาน**
-- ตรวจสอบ Mistral API key
-- ตรวจสอบ rate limit (ฟรี tier)
-
-**2. Qdrant connection failed**
-- ตรวจสอบว่า Qdrant server ทำงาน
-- ตรวจสอบ URL และ port
-
-**3. Chat ไม่ตอบสนอง**
-- ตรวจสอบ API keys
-- ดู console สำหรับ error messages
-
-**4. Memory usage สูง**
-- รัน "Optimize Memory Usage"
-- ลด chunk size ใน settings
-
-### Debug Mode
-```javascript
-// เปิด debug ใน console
-window.aiMcpPlugin.performanceOptimizer.getPerformanceMetrics()
-```
-
-## 🤝 การพัฒนาต่อ
-
-### Architecture
-```
-main.ts                 # Main plugin class
-├── src/
-│   ├── performance.ts  # Performance optimization
-│   └── advanced-features.ts # Smart features
-├── styles.css         # UI styling
-└── ai-mcp-instructions.json # Configuration
-```
-
-### Extension Points
-- Custom role templates
-- Additional embedding providers
-- New search algorithms
-- UI themes and layouts
-
-## 📄 License
-
-MIT License - ใช้งานและปรับแต่งได้อย่างอิสระ
-
-## 🙏 Credits
-
-- **Obsidian API**: สำหรับ plugin framework
-- **Mistral AI**: สำหรับ embeddings
-- **Qdrant**: สำหรับ vector database
-- **LangChain**: สำหรับ AI integrations
-
----
-
-## 🚀 เริ่มต้นใช้งาน
-
-1. **ติดตั้งปลั๊กอิน** ตามขั้นตอนข้างต้น
-2. **ตั้งค่า API keys** ใน settings
-3. **รัน Initialize Vault Memory** เพื่อสแกน vault
-4. **เปิด AI Chat** และเริ่มสนทนา!
-
-สำหรับคำถามและการสนับสนุน กรุณาเปิด issue ใน GitHub repository
-
-**Happy Knowledge Management! 🧠✨**
+This project is part of the bl1nk ecosystem and follows the same licensing terms.
