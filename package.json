@@ -24,7 +24,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "@types/node": "^24.7.0",
-    "@types/react": "^19.2.1",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.13.1",
